@@ -1,37 +1,25 @@
 package com.scouter.gateway.build;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.GitProperties;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BuildInfoProvider {
 
-    @Value("${git.remote.origin.url:unknown}")
-    private String repo;
-
-    @Value("${git.branch:unknown}")
-    private String branch;
-
-    @Value("${git.commit.id:unknown}")
-    private String commit;
-
-    @Value("${git.commit.message.short:unknown}")
-    private String commitMessage;
-
-    @Value("${git.commit.user.name:unknown}")
-    private String commitAuthor;
-
-    @Value("${git.commit.time:unknown}")
-    private String buildTime;
+    @Autowired(required = false)
+    private GitProperties gitProperties;
 
     public BuildInfo _get() {
+        if (gitProperties == null) {
+            return new BuildInfo("unknown", "unknown", "unknown", "unknown", "unknown");
+        }
         return new BuildInfo(
-            repo,
-            branch,
-            commit,
-            commitMessage,
-            commitAuthor,
-            buildTime
+            gitProperties.get("remote.origin.url"),
+            gitProperties.getBranch(),
+            gitProperties.getShortCommitId(),
+            gitProperties.get("commit.user.name"),
+            gitProperties.getCommitTime() != null ? gitProperties.getCommitTime().toString() : "unknown"
         );
     }
 }
