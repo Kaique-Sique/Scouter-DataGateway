@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /**
  * HealthDatabaseProvider
  */
-@componet
+@Component
 public class HealthDatabaseProvider {
     private final JdbcTemplate jdbcTemplate;
 
@@ -29,11 +29,9 @@ public class HealthDatabaseProvider {
             return new HealthDependency("Supabase-db", "up", latency);
 
         } catch (Exception e) {
-            long latency = System.currentTimeMillis() - start;
-            return new HealthDependency("Supabase-db", $"down-{e}", latency);
+            long latency = System.currentTimeMillis() - startTime;
+            return new HealthDependency("Supabase-db", e.toString(), latency);
 
         }
-
-        return new HealthDependency(null, null, null, null);
     }
 }
