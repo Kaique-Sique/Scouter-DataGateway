@@ -1,4 +1,4 @@
-package com.scouter.gateway.controller;
+package com.scouter.gateway.controller.health;
 
 public record HealthDependency(
     String name,
