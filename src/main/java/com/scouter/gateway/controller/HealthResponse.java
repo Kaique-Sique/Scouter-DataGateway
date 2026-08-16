@@ -1,11 +1,17 @@
 package com.scouter.gateway.controller;
 
+// java imports
 import java.time.Instant;
 import java.util.List;
+
+// local imports
+import com.scouter.gateway.build.BuildInfo;
+
 
 public record HealthResponse(
         String status,
         String service,
+        BuildInfo build,
         String version,
         Instant timestamp,
         String javaVersion,
