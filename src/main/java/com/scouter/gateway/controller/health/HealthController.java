@@ -1,4 +1,4 @@
-package com.scouter.gateway.controller;
+package com.scouter.gateway.controller.health;
 
 //Java imports
 import java.time.Instant;
@@ -15,9 +15,11 @@ import com.scouter.gateway.build.BuildInfoProvider;
 public class HealthController {
 
     private final BuildInfoProvider buildInfoProvider;
+    private final HealthDatabaseProvider healthDatabaseProvider;
 
-    public HealthController(BuildInfoProvider buildInfoProvider) {
+    public HealthController(BuildInfoProvider buildInfoProvider, HealthDatabaseProvider healthDatabaseProvider) {
         this.buildInfoProvider = buildInfoProvider;
+        this.healthDatabaseProvider = healthDatabaseProvider;
     }
     
     /**
@@ -38,12 +40,7 @@ public class HealthController {
             "17.0.16",
             "4.1.0",
             "development",
-            List.of(
-                new HealthDependency(
-                    "Supabase-db",
-                    "not-implemented",
-                    0)
-            )
+            List.of(healthDatabaseProvider.check())
         );
     }
 }
