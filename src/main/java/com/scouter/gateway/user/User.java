@@ -1,5 +1,7 @@
 package com.scouter.gateway.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
@@ -19,6 +21,7 @@ public class User {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @JsonIgnore
     private String passwordHash;
 
     @Column(nullable = false, length = 20)
@@ -45,6 +48,17 @@ public class User {
         this.passwordHash = passwordHash;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        Instant now = Instant.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
     }
 
     @PreUpdate

@@ -12,6 +12,8 @@ server:
 
 scouter:
   environment: development
+  session:
+    ttl-hours: 168 # 7 dias
 
 logging:
   level:
