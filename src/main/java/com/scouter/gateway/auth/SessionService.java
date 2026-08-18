@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.scouter.gateway.user.User;
 
@@ -60,6 +61,7 @@ public class SessionService {
     /**
      * Revokes (deletes) the session associated with the given raw token.
      */
+    @Transactional
     public void revoke(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
             return;

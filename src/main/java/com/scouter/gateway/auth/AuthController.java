@@ -48,6 +48,17 @@ public class AuthController {
                 .body(AuthResponse.from(result.user()));
     }
 
+    @PostMapping("/register-admin")
+    public ResponseEntity<AuthResponse> registerAdmin(
+            @RequestBody RegisterRequest request) {
+
+        var user = authService.registerAdmin(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(AuthResponse.from(user));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
             @CookieValue(name = AuthFilter.SESSION_COOKIE_NAME, required = false) String sessionToken) {

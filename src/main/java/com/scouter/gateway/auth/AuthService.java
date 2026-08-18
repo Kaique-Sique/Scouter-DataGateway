@@ -26,6 +26,7 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             TokenService tokenService,
             SessionService sessionService) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
@@ -33,33 +34,50 @@ public class AuthService {
     }
 
     /**
-     * Registers a new user. Does not create a session — the user must
-     * subsequently log in.
+     * Registro normal.
+     * Todo usuário criado por esse método recebe a role USER.
      */
     public User register(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException(request.email());
-        }
-
-        if (userRepository.existsByUsername(request.username())) {
-            throw new UsernameAlreadyExistsException(request.username());
-        }
+        validateNewUser(request);
 
         User user = new User();
+
         user.setUsername(request.username());
         user.setEmail(request.email());
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setPasswordHash(
+                passwordEncoder.encode(request.password())
+        );
         user.setActive(true);
-        user.setRole("SCOUT");
+        user.setRole("USER");
 
         return userRepository.save(user);
     }
 
     /**
-     * Validates credentials and opens a new session, returning the raw
-     * session token (to be placed in the HttpOnly cookie by the controller)
-     * together with the authenticated user and the session's expiry.
+     * Criação de administrador.
+     * A autorização para chamar esse método deve ser feita
+     * pelo Controller/Security antes de chegar aqui.
+     */
+    public User registerAdmin(RegisterRequest request) {
+
+        validateNewUser(request);
+
+        User user = new User();
+
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPasswordHash(
+                passwordEncoder.encode(request.password())
+        );
+        user.setActive(true);
+        user.setRole("ADMIN");
+
+        return userRepository.save(user);
+    }
+
+    /**
+     * Valida credenciais e cria uma nova sessão.
      */
     public LoginResult login(LoginRequest request) {
 
@@ -70,23 +88,47 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(
+                request.password(),
+                user.getPasswordHash())) {
+
             throw new InvalidCredentialsException();
         }
 
         String rawToken = tokenService.generateToken();
-        UserSession session = sessionService.createSession(user, rawToken);
 
-        return new LoginResult(user, rawToken, session.getExpiresAt());
+        UserSession session =
+                sessionService.createSession(user, rawToken);
+
+        return new LoginResult(
+                user,
+                rawToken,
+                session.getExpiresAt()
+        );
     }
 
     /**
-     * Revokes the session tied to the given raw token, if any.
+     * Remove a sessão associada ao token.
      */
     public void logout(String rawToken) {
         sessionService.revoke(rawToken);
     }
 
-    public record LoginResult(User user, String token, Instant expiresAt) {
+    private void validateNewUser(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new EmailAlreadyExistsException(request.email());
+        }
+
+        if (userRepository.existsByUsername(request.username())) {
+            throw new UsernameAlreadyExistsException(request.username());
+        }
+    }
+
+    public record LoginResult(
+            User user,
+            String token,
+            Instant expiresAt
+    ) {
     }
 }
