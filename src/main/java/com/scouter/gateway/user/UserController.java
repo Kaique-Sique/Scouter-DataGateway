@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.scouter.gateway.user.favorites.events.FavoriteEventService;
 import com.scouter.gateway.user.favorites.events.FavoriteEventResponse;
+import com.scouter.gateway.user.favorites.teams.FavoriteTeamService;
 import com.scouter.gateway.user.preferences.*;
 
 @RestController
@@ -18,15 +19,18 @@ public class UserController {
     private final AuthService authService;
     private final UserPreferencesService userPreferencesService;
     private final FavoriteEventService favoriteEventService;
+    private final FavoriteTeamService favoriteTeamService;
 
     public UserController(
             AuthService authService,
             UserPreferencesService userPreferencesService,
-            FavoriteEventService favoriteEventService) {
+            FavoriteEventService favoriteEventService,
+            FavoriteTeamService favoriteTeamService) {
 
         this.authService = authService;
         this.userPreferencesService = userPreferencesService;
         this.favoriteEventService = favoriteEventService;
+        this.favoriteTeamService = favoriteTeamService;
     }
 
     private Optional<User> authenticate(String credentials) {
@@ -122,5 +126,35 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity
                         .status(401)
                         .build());
+    }
+
+    @PostMapping("/me/favorites/teams/{teamId}")
+    public ResponseEntity<Void> addFavoriteTeam(
+            @PathVariable String teamId,
+            @RequestHeader("X-Credentials") String credentials) {
+
+        return authenticate(credentials)
+                .map(user -> {
+                    favoriteTeamService.addFavorite(user.getId(), teamId);
+
+                    return ResponseEntity.ok().<Void>build();
+                })
+                .orElseGet(() -> ResponseEntity
+                        .status(401)
+                        .build());
+
+    }
+
+    @DeleteMapping("/me/favorites/teams/{teamId}")
+    public ResponseEntity<Void> removeFavoriteTeam(
+            @PathVariable String teamId,
+            @RequestHeader("X-Credentials") String credentials) {
+
+        // autenticação
+        // pegar userId
+        // verificar equipe
+        favoriteTeamService.removeFavorite(userId, teamId);
+
+        return ResponseEntity.noContent().build();
     }
 }
