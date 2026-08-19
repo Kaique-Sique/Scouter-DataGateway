@@ -150,11 +150,14 @@ public class UserController {
             @PathVariable String teamId,
             @RequestHeader("X-Credentials") String credentials) {
 
-        // autenticação
-        // pegar userId
-        // verificar equipe
-        favoriteTeamService.removeFavorite(userId, teamId);
+        return authenticate(credentials)
+                .map(user -> {
+                    favoriteTeamService.removeFavorite(user.getId(), teamId);
 
-        return ResponseEntity.noContent().build();
+                    return ResponseEntity.noContent().<Void>build();
+                })
+                .orElseGet(() -> ResponseEntity
+                        .status(401)
+                        .build());
     }
 }
