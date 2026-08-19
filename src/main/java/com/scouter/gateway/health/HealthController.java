@@ -1,4 +1,4 @@
-package com.scouter.gateway.controller.health;
+package com.scouter.gateway.health;
 
 //Java imports
 import java.time.Instant;

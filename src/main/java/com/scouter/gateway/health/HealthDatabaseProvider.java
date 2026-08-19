@@ -1,4 +1,4 @@
-package com.scouter.gateway.controller.health;
+package com.scouter.gateway.health;
 
 
 import org.springframework.jdbc.core.JdbcTemplate;
