@@ -18,7 +18,7 @@ public class FavoriteTeamService {
 
     public void addFavorite(UUID userId, String teamId) {
 
-        if (repository.existsByUserIdAndEventId(userId, teamId)) {
+        if (repository.existsByUserIdAndTeamId(userId, teamId)) {
             return;
         }
 
@@ -33,7 +33,7 @@ public class FavoriteTeamService {
 
     @Transactional
     public void removeFavorite(UUID userId, String teamId) {
-        repository.deleteByUserIdAndEventId(
+        repository.deleteByUserIdAndTeamId(
                 userId,
                 teamId
         );
