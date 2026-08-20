@@ -10,7 +10,7 @@ public interface UserFavoriteTeamRepository
 
     List<UserFavoriteTeam> findByUserId(UUID userId);
 
-    boolean existsByUserIdAndEventId(UUID userId, String teamId);
+    boolean existsByUserIdAndTeamId(UUID userId, String teamId);
 
-    void deleteByUserIdAndEventId(UUID userId, String teamId);
+    void deleteByUserIdAndTeamId(UUID userId, String teamId);
 }
