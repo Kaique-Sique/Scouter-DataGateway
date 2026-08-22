@@ -21,5 +21,5 @@ public class ScoutController {
         this.teleopScoutService = teleopScoutService;
     }
 
-    
+
 }
