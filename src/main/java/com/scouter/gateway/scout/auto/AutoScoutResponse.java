@@ -1,7 +1,6 @@
 package com.scouter.gateway.scout.auto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record AutoScoutResponse(
     String matchTeamId,
@@ -9,7 +8,6 @@ public record AutoScoutResponse(
     String matchKey,
     String teamKey,
     int year,
-    UUID userId,
     int l1,
     int l2,
     int l3,
