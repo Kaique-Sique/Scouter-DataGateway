@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.scouter.gateway.auth.AuthService;
+import com.scouter.gateway.auth.Authenticator;
 import com.scouter.gateway.scout.auto.AutoScoutService;
 import com.scouter.gateway.scout.teleop.TeleopScoutService;
 
@@ -11,6 +12,7 @@ import com.scouter.gateway.scout.teleop.TeleopScoutService;
 @RequestMapping("/scout")
 public class ScoutController {
     private final AuthService authService;
+    private final Authenticator authenticator;
     private final AutoScoutService autoScoutService;
     private final TeleopScoutService teleopScoutService;
 
@@ -19,6 +21,8 @@ public class ScoutController {
         this.authService = authService;
         this.autoScoutService = autoScoutService;
         this.teleopScoutService = teleopScoutService;
+
+        authenticator = new Authenticator(authService);
     }
 
 
