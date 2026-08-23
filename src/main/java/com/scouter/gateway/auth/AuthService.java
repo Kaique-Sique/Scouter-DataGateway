@@ -85,5 +85,15 @@ public class AuthService {
             password,
             user.getPasswordHash()
         ));
-}
+    }
+
+    public Optional<User> authenticateAdmin(String email, String password) {
+    return userRepository.findByEmail(email)
+        .filter(User::isActive)
+        .filter(User::isAdmin)
+        .filter(user -> passwordEncoder.matches(
+            password,
+            user.getPasswordHash()
+        ));
+    }
 }

@@ -29,6 +29,10 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.SCOUT;
+
+    @Column(nullable = false)
     private boolean active = true;
 
     @Column(name = "created_at", nullable = false)
@@ -49,6 +53,22 @@ public class User {
         updatedAt = Instant.now();
     }
 
+
+    public enum Role {
+        SCOUT("SCOUT"),
+        ADMIN("ADMIN"); 
+
+        private final String value;
+        
+        Role(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
     public UUID getId() {
         return id;
     }
@@ -67,6 +87,10 @@ public class User {
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
     }
 
     public Instant getCreatedAt() {

@@ -15,44 +15,7 @@ public class TeleopScoutService {
         this.teleopScoutRepository = teleopScoutRepository;
     }
 
-
-    Optional<TeleopScout> findByMatchTeamId(String matchTeamId) 
-    {
-        return null;
-    }
-
-    List<TeleopScout> findByUserId(UUID userId) 
-    {
-        return null;
-    }
-
-    List<TeleopScout> findByTeamKey(String teamKey) 
-    {
-        return null;
-    }
-
-    List<TeleopScout> findByEventKey(String eventKey) 
-    {
-        return null;
-    }
-
-    List<TeleopScout> findByMatchKey(String matchKey) 
-    {
-        return null;
-    }
-
-    List<TeleopScout> findByTeamKeyAndMatchKey(String teamKey, String matchKey) 
-    {
-        return null;
-    }
-
-    boolean existsByMatchTeamId(String matchTeamId) 
-    {
-        return false;
-    }
-
-    void deleteByMatchTeamId(String matchTeamId)
-    {
+    public void DeleteByMatchTeamId(String MatchTeamId){
         
     }
 }

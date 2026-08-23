@@ -71,7 +71,7 @@ public class UserService {
         return toResponse(user);
     }
 
-    public UserResponse deactivate(UUID id) {
+    public UserResponse desactivate(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 

@@ -1,6 +1,7 @@
 package com.scouter.gateway.user;
 
 import com.scouter.gateway.auth.AuthService;
+import com.scouter.gateway.auth.Authenticator;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class UserController {
     private final UserPreferencesService userPreferencesService;
     private final FavoriteEventService favoriteEventService;
     private final FavoriteTeamService favoriteTeamService;
+    private final Authenticator authenticator;
 
     public UserController(
             AuthService authService,
@@ -37,16 +39,8 @@ public class UserController {
         this.userPreferencesService = userPreferencesService;
         this.favoriteEventService = favoriteEventService;
         this.favoriteTeamService = favoriteTeamService;
-    }
 
-    private Optional<User> authenticate(String credentials) {
-        String[] parts = credentials.split("/", 2);
-
-        if (parts.length != 2) {
-            return Optional.empty();
-        }
-
-        return authService.authenticate(parts[0], parts[1]);
+        authenticator = new Authenticator(this.authService);
     }
 
     // ── Self ──────────────────────────────────────────────────────────────────
@@ -55,7 +49,7 @@ public class UserController {
     public ResponseEntity<UserResponse> me(
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -68,7 +62,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @RequestParam String username) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -85,7 +79,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @RequestParam String email) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -103,7 +97,7 @@ public class UserController {
     public ResponseEntity<UserPreferencesResponse> preferences(
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -116,7 +110,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -130,7 +124,7 @@ public class UserController {
     public ResponseEntity<FavoriteEventResponse> favoriteEvents(
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -143,7 +137,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -157,7 +151,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -173,7 +167,7 @@ public class UserController {
             @PathVariable String teamId,
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -187,7 +181,7 @@ public class UserController {
             @PathVariable String teamId,
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -202,7 +196,7 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> listAll(
             @RequestHeader("X-Credentials") String credentials) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -215,7 +209,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable UUID id) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -232,13 +226,13 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable UUID id) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         try {
-            return ResponseEntity.ok(userService.deactivate(id));
+            return ResponseEntity.ok(userService.desactivate(id));
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -249,7 +243,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable UUID id) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -266,7 +260,7 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable UUID id) {
 
-        Optional<User> userOpt = authenticate(credentials);
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
         if (userOpt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
