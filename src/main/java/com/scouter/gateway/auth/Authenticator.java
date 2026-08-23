@@ -1,6 +1,7 @@
 package com.scouter.gateway.auth;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import com.scouter.gateway.user.User;
 
@@ -32,6 +33,13 @@ public class Authenticator {
         return authService.authenticateAdmin(parts[0], parts[1]);
     }
 
+    public Optional<User> authenticateId(String credentials, UUID user_id) {
+        String[] parts = credentials.split("/", 2);
 
-    
+        if (parts.length != 2) {
+            return Optional.empty();
+        }
+
+        return authService.authenticateId(parts[0], parts[1], user_id);
+    }    
 }

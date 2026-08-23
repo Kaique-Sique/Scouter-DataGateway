@@ -4,6 +4,7 @@ import com.scouter.gateway.user.User;
 import com.scouter.gateway.user.UserRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -95,5 +96,15 @@ public class AuthService {
             password,
             user.getPasswordHash()
         ));
+    }
+
+    public Optional<User> authenticateId(String email, String password, UUID userId) {
+        return userRepository.findByEmail(email)
+            .filter(User::isActive)
+            .filter(user -> user.getId().equals(userId))
+            .filter(user -> passwordEncoder.matches(
+                password,
+                user.getPasswordHash()
+            ));
     }
 }

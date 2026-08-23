@@ -3,6 +3,8 @@ package com.scouter.gateway.scout.auto;
 import jakarta.persistence.*;
 
 import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -72,6 +74,7 @@ public class AutoScout {
     private int algaeProcessor = 0;
 
     // REGIOES (jsonb cru como texto - sem dependencia extra)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "region_scored", columnDefinition = "jsonb")
     private String regionScored;
 
