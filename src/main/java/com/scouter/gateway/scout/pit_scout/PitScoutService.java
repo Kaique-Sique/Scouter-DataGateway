@@ -14,6 +14,15 @@ public class PitScoutService {
         this.pitScoutRepository = pitScoutRepository;
     }
 
+    public PitScoutResponse create(PitScout pitScout) {
+        return toResponse(pitScoutRepository.save(pitScout));
+    }
+
+    public PitScout getEntityById(UUID id) {
+        return pitScoutRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pit scout not found"));
+    }
+
     public List<PitScoutResponse> findByUserId(UUID userId) {
         return pitScoutRepository.findByUserId(userId)
                 .stream()

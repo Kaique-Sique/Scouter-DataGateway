@@ -29,7 +29,7 @@ public class Authenticator {
             return Optional.empty();
         }
 
-        return authService.authenticate(parts[0], parts[1]);
+        return authService.authenticateAdmin(parts[0], parts[1]);
     }
 
 

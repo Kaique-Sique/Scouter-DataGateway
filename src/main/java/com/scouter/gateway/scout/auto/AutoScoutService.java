@@ -15,9 +15,9 @@ public class AutoScoutService {
         this.repository = repository;
     }
 
-    public void addFavorite(String matchTeamId, AutoScout scout) {
+    public void create(AutoScout scout) {
 
-        if (repository.existsByMatchTeamId(matchTeamId)) {
+        if (repository.existsByMatchTeamId(scout.getMatchTeamId())) {
             return;
         }
 
@@ -58,4 +58,4 @@ public class AutoScoutService {
     public void deleteByMatchTeamId(String matchTeamId) {
         repository.deleteByMatchTeamId(matchTeamId);
     }
-}   
+}

@@ -15,9 +15,9 @@ public class TeleopScoutService {
         this.repository = repository;
     }
 
-    public void addFavorite(String matchTeamId, TeleopScout scout) {
+    public void create(TeleopScout scout) {
 
-        if (repository.existsByMatchTeamId(matchTeamId)) {
+        if (repository.existsByMatchTeamId(scout.getMatchTeamId())) {
             return;
         }
 
@@ -58,4 +58,4 @@ public class TeleopScoutService {
     public void deleteByMatchTeamId(String matchTeamId) {
         repository.deleteByMatchTeamId(matchTeamId);
     }
-}   
+}

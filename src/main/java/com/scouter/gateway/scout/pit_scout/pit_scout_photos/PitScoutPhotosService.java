@@ -5,13 +5,32 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.scouter.gateway.scout.pit_scout.PitScout;
+import com.scouter.gateway.scout.pit_scout.PitScoutService;
+
 @Service
 public class PitScoutPhotosService {
 
     private final PitScoutPhotosRepository pitScoutPhotosRepository;
+    private final PitScoutService pitScoutService;
 
-    public PitScoutPhotosService(PitScoutPhotosRepository pitScoutPhotosRepository) {
+    public PitScoutPhotosService(
+            PitScoutPhotosRepository pitScoutPhotosRepository,
+            PitScoutService pitScoutService) {
+
         this.pitScoutPhotosRepository = pitScoutPhotosRepository;
+        this.pitScoutService = pitScoutService;
+    }
+
+    public PitScoutPhotosResponse create(UUID pitScoutId, String imgUrl, String description) {
+        PitScout pitScout = pitScoutService.getEntityById(pitScoutId);
+
+        PitScoutPhotos photo = new PitScoutPhotos();
+        photo.setImgUrl(imgUrl);
+        photo.setDescription(description);
+        photo.setPitScout(pitScout);
+
+        return toResponse(pitScoutPhotosRepository.save(photo));
     }
 
     public List<PitScoutPhotosResponse> findByPitScoutId(UUID pitScoutId) {
