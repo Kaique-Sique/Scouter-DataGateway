@@ -38,3 +38,6 @@ out/
 
 ### eviroments ###
 .env
+
+### java log ###
+log.txt
