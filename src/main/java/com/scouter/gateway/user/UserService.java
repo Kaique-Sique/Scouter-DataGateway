@@ -28,6 +28,14 @@ public class UserService {
         return toResponse(user);
     }
 
+    public UserResponse getByUsername(String username) 
+    {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(()-> new IllegalArgumentException("User not found"));
+
+        return toResponse(user);
+    }
+
     public List<UserResponse> getAll() {
         return userRepository.findAll()
                 .stream()

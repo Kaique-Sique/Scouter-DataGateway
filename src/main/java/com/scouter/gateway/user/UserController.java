@@ -221,8 +221,61 @@ public class UserController {
         }
     }
 
-    @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<UserResponse> deactivate(
+    @GetMapping("/username/{username}")
+    public ResponseEntity<UserResponse> getByUsername(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.getByUsername(username));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("username/{username}/desactivate")
+    public ResponseEntity<UserResponse> desactivate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            UUID id = userService.getByUsername(username).id();
+            return ResponseEntity.ok(userService.desactivate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("username/{username}/activate")
+    public ResponseEntity<UserResponse> activate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            UUID id = userService.getByUsername(username).id();
+            return ResponseEntity.ok(userService.activate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/desactivate")
+    public ResponseEntity<UserResponse> desactivate(
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable UUID id) {
 
