@@ -1,0 +1,35 @@
+package com.scouter.gateway.scout.teleop;
+
+import java.math.BigDecimal;
+
+public record TeleopScoutResponse(
+        String matchTeamId,
+        String eventKey,
+        String matchKey,
+        String teamKey,
+        int year,
+        int l1,
+        int l2,
+        int l3,
+        int l4,
+        int coralMisseds,
+        BigDecimal coralPrecision,
+        int algaeRemoved,
+        int algaeNet,
+        int algaeProcessor,
+        String climb,
+        boolean collectedCoralFloor,
+        boolean collectedCoralStation,
+        boolean collectedAlgaeReef,
+        boolean defended,
+        Integer defendedEffectiveness,
+        boolean wasDefended,
+        Integer defenseEffectiveness,
+        boolean disabled,
+        boolean tipped,
+        boolean immobilized,
+        boolean issues,
+        String issuesNotes,
+        Integer driverRating,
+        int score,
+        String notes) {}

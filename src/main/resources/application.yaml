@@ -8,7 +8,7 @@ spring:
     password: ${DB_PASSWORD}
 
 server:
-  port: 8081
+  port: 8080
 
 scouter:
   environment: development
@@ -18,3 +18,9 @@ scouter:
 logging:
   level:
     org.springframework.security: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /api-docs

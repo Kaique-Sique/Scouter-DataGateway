@@ -1,9 +1,13 @@
 package com.scouter.gateway.user;
 
 import com.scouter.gateway.auth.AuthService;
+import com.scouter.gateway.auth.Authenticator;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,79 +21,115 @@ import com.scouter.gateway.user.preferences.*;
 public class UserController {
 
     private final AuthService authService;
+    private final UserService userService;
     private final UserPreferencesService userPreferencesService;
     private final FavoriteEventService favoriteEventService;
     private final FavoriteTeamService favoriteTeamService;
+    private final Authenticator authenticator;
 
     public UserController(
             AuthService authService,
+            UserService userService,
             UserPreferencesService userPreferencesService,
             FavoriteEventService favoriteEventService,
             FavoriteTeamService favoriteTeamService) {
 
         this.authService = authService;
+        this.userService = userService;
         this.userPreferencesService = userPreferencesService;
         this.favoriteEventService = favoriteEventService;
         this.favoriteTeamService = favoriteTeamService;
+
+        authenticator = new Authenticator(this.authService);
     }
 
-    private Optional<User> authenticate(String credentials) {
-        String[] parts = credentials.split("/", 2);
-
-        if (parts.length != 2) {
-            return Optional.empty();
-        }
-
-        return authService.authenticate(parts[0], parts[1]);
-    }
+    // ── Self ──────────────────────────────────────────────────────────────────
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(
             @RequestHeader("X-Credentials") String credentials) {
 
-        return authenticate(credentials)
-                .map(user -> ResponseEntity.ok(
-                        new UserResponse(
-                                user.getId(),
-                                user.getUsername(),
-                                user.getEmail(),
-                                user.isActive())))
-                .orElseGet(() -> ResponseEntity.status(401).build());
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(userService.getById(userOpt.get().getId()));
     }
+
+    @PatchMapping("/me/username")
+    public ResponseEntity<UserResponse> updateMyUsername(
+            @RequestHeader("X-Credentials") String credentials,
+            @RequestParam String username) {
+
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.updateUsername(userOpt.get().getId(), username));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping("/me/email")
+    public ResponseEntity<UserResponse> updateMyEmail(
+            @RequestHeader("X-Credentials") String credentials,
+            @RequestParam String email) {
+
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.updateEmail(userOpt.get().getId(), email));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // ── Preferences ───────────────────────────────────────────────────────────
 
     @GetMapping("/me/preferences")
     public ResponseEntity<UserPreferencesResponse> preferences(
             @RequestHeader("X-Credentials") String credentials) {
 
-        return authenticate(credentials)
-                .map(user -> ResponseEntity.ok(
-                        userPreferencesService.get(user.getId())))
-                .orElseGet(() -> ResponseEntity.status(401).build());
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(userPreferencesService.get(userOpt.get().getId()));
     }
 
     @PostMapping("/me/preferences/{eventId}")
-    public ResponseEntity<UserPreferencesResponse> preferences(
+    public ResponseEntity<UserPreferencesResponse> setLastEvent(
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        return authenticate(credentials)
-                .map(user -> ResponseEntity.ok(
-                        userPreferencesService.setLastEvent(
-                                user.getId(),
-                                eventId)))
-                .orElseGet(() -> ResponseEntity.status(401).build());
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(userPreferencesService.setLastEvent(userOpt.get().getId(), eventId));
     }
+
+    // ── Favorite Events ───────────────────────────────────────────────────────
 
     @GetMapping("/me/favorites/events")
     public ResponseEntity<FavoriteEventResponse> favoriteEvents(
             @RequestHeader("X-Credentials") String credentials) {
 
-        return authenticate(credentials)
-                .map(user -> ResponseEntity.ok(
-                        favoriteEventService.getFavorites(user.getId())))
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .build());
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(favoriteEventService.getFavorites(userOpt.get().getId()));
     }
 
     @PostMapping("/me/favorites/events/add/{eventId}")
@@ -97,17 +137,13 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        return authenticate(credentials)
-                .map(user -> {
-                    favoriteEventService.addFavorite(
-                            user.getId(),
-                            eventId);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .build());
+        favoriteEventService.addFavorite(userOpt.get().getId(), eventId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/me/favorites/events/remove/{eventId}")
@@ -115,34 +151,29 @@ public class UserController {
             @RequestHeader("X-Credentials") String credentials,
             @PathVariable String eventId) {
 
-        return authenticate(credentials)
-                .map(user -> {
-                    favoriteEventService.removeFavorite(
-                            user.getId(),
-                            eventId);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .build());
+        favoriteEventService.removeFavorite(userOpt.get().getId(), eventId);
+        return ResponseEntity.noContent().build();
     }
+
+    // ── Favorite Teams ────────────────────────────────────────────────────────
 
     @PostMapping("/me/favorites/teams/{teamId}")
     public ResponseEntity<Void> addFavoriteTeam(
             @PathVariable String teamId,
             @RequestHeader("X-Credentials") String credentials) {
 
-        return authenticate(credentials)
-                .map(user -> {
-                    favoriteTeamService.addFavorite(user.getId(), teamId);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .build());
-
+        favoriteTeamService.addFavorite(userOpt.get().getId(), teamId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/me/favorites/teams/{teamId}")
@@ -150,14 +181,148 @@ public class UserController {
             @PathVariable String teamId,
             @RequestHeader("X-Credentials") String credentials) {
 
-        return authenticate(credentials)
-                .map(user -> {
-                    favoriteTeamService.removeFavorite(user.getId(), teamId);
+        Optional<User> userOpt = authenticator.authenticate(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .build());
+        favoriteTeamService.removeFavorite(userOpt.get().getId(), teamId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Admin ─────────────────────────────────────────────────────────────────
+
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> listAll(
+            @RequestHeader("X-Credentials") String credentials) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(userService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getById(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable UUID id) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.getById(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/username/{username}")
+    public ResponseEntity<UserResponse> getByUsername(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.getByUsername(username));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("username/{username}/desactivate")
+    public ResponseEntity<UserResponse> desactivate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            UUID id = userService.getByUsername(username).id();
+            return ResponseEntity.ok(userService.desactivate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("username/{username}/activate")
+    public ResponseEntity<UserResponse> activate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable String username) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            UUID id = userService.getByUsername(username).id();
+            return ResponseEntity.ok(userService.activate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/desactivate")
+    public ResponseEntity<UserResponse> desactivate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable UUID id) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.desactivate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<UserResponse> activate(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable UUID id) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            return ResponseEntity.ok(userService.activate(id));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @RequestHeader("X-Credentials") String credentials,
+            @PathVariable UUID id) {
+
+        Optional<User> userOpt = authenticator.authenticateAdmin(credentials);
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            userService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
