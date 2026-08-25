@@ -8,17 +8,13 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-//local imports
-import com.scouter.gateway.build.BuildInfoProvider;
 
 @RestController
 public class HealthController {
 
-    private final BuildInfoProvider buildInfoProvider;
     private final HealthDatabaseProvider healthDatabaseProvider;
 
-    public HealthController(BuildInfoProvider buildInfoProvider, HealthDatabaseProvider healthDatabaseProvider) {
-        this.buildInfoProvider = buildInfoProvider;
+    public HealthController(HealthDatabaseProvider healthDatabaseProvider) {
         this.healthDatabaseProvider = healthDatabaseProvider;
     }
     
@@ -34,7 +30,6 @@ public class HealthController {
         return new HealthResponse(
             "UP",
             "Scouter Gateway",
-            buildInfoProvider._get(),
             "0.0.1",
             Instant.now(),
             "17.0.16",
