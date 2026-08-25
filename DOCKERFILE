@@ -6,6 +6,8 @@ COPY . .
 
 RUN chmod +x gradlew
 
+RUN echo "DB_HOST=$DB_HOST"
+RUN echo "DB_PORT=$DB_PORT"
 RUN ./gradlew bootJar --no-daemon
 
 EXPOSE 8080
