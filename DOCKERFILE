@@ -6,6 +6,10 @@ COPY . .
 
 RUN chmod +x gradlew
 
-RUN java -version
-RUN ./gradlew --version
-RUN ./gradlew bootJar --no-daemon --stacktrace
+RUN echo "DB_HOST=$DB_HOST"
+RUN echo "DB_PORT=$DB_PORT"
+RUN ./gradlew bootJar --no-daemon
+
+EXPOSE 8080
+
+CMD ["sh", "-c", "java -jar build/libs/*.jar"]
